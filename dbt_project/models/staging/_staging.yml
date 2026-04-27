@@ -9,24 +9,25 @@ models:
     columns:
       - name: concessionaria
         description: Trimmed concessionaire name.
-        tests:
+        data_tests:
           - not_null
       - name: mes_ano
         description: Trimmed `Mon-YY` month-year stamp.
-        tests:
+        data_tests:
           - not_null
       - name: praca
         description: Trimmed plaza identifier.
-        tests:
+        data_tests:
           - not_null
       - name: volume_total
         description: Monthly vehicle volume (integer).
-        tests:
+        data_tests:
           - not_null
           # Soft assertion: a handful of source rows have negative counts.
           # We surface them as warnings rather than fail the build, then
           # decide in Silver whether to drop, flag, or keep them.
           - dbt_utils.expression_is_true:
-              expression: ">= 0"
+              arguments:
+                expression: ">= 0"
               config:
                 severity: warn

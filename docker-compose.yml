@@ -15,6 +15,13 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+    # Airflow 3 task workers call back to the api-server via this URL.
+    # Without it, every task fails with `ConnectError: Connection refused`.
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+    AIRFLOW__CORE__INTERNAL_API_URL: http://airflow-apiserver:8080
+    # Shared JWT signing key — without it, every container generates its
+    # own and tasks fail with `Invalid auth token: Signature verification failed`.
+    AIRFLOW__API_AUTH__JWT_SECRET: capstone-shared-jwt-secret-not-for-prod
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@postgres:5432/${AIRFLOW_DB}
     POSTGRES_HOST: postgres
     POSTGRES_PORT: "5432"

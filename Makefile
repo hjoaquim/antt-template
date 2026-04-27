@@ -18,8 +18,9 @@ up:
 	@$(PERMISSIONS_FIX)
 	$(COMPOSE) up -d
 	@echo
-	@echo "Airflow UI:   http://localhost:8080"
-	@echo "Postgres:     localhost:5432 (see .env for creds)"
+	@. ./.env 2>/dev/null; \
+		echo "Airflow UI:   http://localhost:$${AIRFLOW_HOST_PORT:-8080}"; \
+		echo "Postgres:     localhost:$${POSTGRES_HOST_PORT:-5432} (see .env for creds)"
 
 down:
 	$(COMPOSE) down

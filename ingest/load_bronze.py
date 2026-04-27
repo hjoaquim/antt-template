@@ -52,12 +52,19 @@ def load_bronze(csv_path: str, conn_str: str) -> int:
     engine = create_engine(conn_str)
     with engine.begin() as conn:
         conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {BRONZE_SCHEMA}"))
+        # Drop with CASCADE so we sweep along any dependent dbt views
+        # (notably staging.stg_toll_traffic). Pandas' if_exists='replace'
+        # issues a plain DROP that fails once a downstream model exists.
+        # dbt rebuilds its views on the next run.
+        conn.execute(
+            text(f"DROP TABLE IF EXISTS {BRONZE_SCHEMA}.{BRONZE_TABLE} CASCADE")
+        )
 
     df.to_sql(
         BRONZE_TABLE,
         engine,
         schema=BRONZE_SCHEMA,
-        if_exists="replace",
+        if_exists="append",
         index=False,
         chunksize=10_000,
         method="multi",
