@@ -9,8 +9,13 @@ the actual exercise (Silver, Gold, tests, contract) instead of on plumbing.
 
 - Docker Engine 24+ with Docker Compose v2
 - ~10 GB of free disk
+- A POSIX shell. On macOS and Linux this is the default. On Windows,
+  open the project from a **WSL2 shell** (Docker Desktop on Windows
+  already runs on WSL2). The Makefile is bash-flavored and will not run
+  from PowerShell or cmd. PowerShell users can still drive the stack
+  with raw `docker compose` commands — see *Without make* below.
 - (Optional) `make`. Every Make target is a thin wrapper around
-  `docker compose` — you can run the underlying commands directly if needed.
+  `docker compose` — `Without make` shows the underlying commands.
 
 ## Quickstart
 
@@ -35,6 +40,49 @@ When you are done:
 make down       # stop the stack, keep the data
 make reset      # nuke the volume and rebuild from scratch
 ```
+
+## Without make
+
+If `make` is not available (typical on PowerShell/cmd, or any environment
+without GNU Make), every Make target maps to a one-line `docker compose`
+call. Run them directly:
+
+```powershell
+# bring the stack up
+docker compose up -d
+
+# load Bronze
+docker compose run --rm --entrypoint python airflow-scheduler `
+  /opt/airflow/ingest/load_bronze.py
+
+# install dbt packages, then run + test
+docker compose run --rm --entrypoint dbt airflow-scheduler `
+  deps --project-dir /opt/airflow/dbt_project `
+       --profiles-dir /opt/airflow/dbt_project
+docker compose run --rm --entrypoint dbt airflow-scheduler `
+  run  --project-dir /opt/airflow/dbt_project `
+       --profiles-dir /opt/airflow/dbt_project
+docker compose run --rm --entrypoint dbt airflow-scheduler `
+  test --project-dir /opt/airflow/dbt_project `
+       --profiles-dir /opt/airflow/dbt_project
+
+# psql into the warehouse
+docker compose exec postgres psql -U warehouse -d warehouse
+
+# stop the stack (keep data)
+docker compose down
+
+# wipe everything (drop the volume too)
+docker compose down -v
+```
+
+The PowerShell line continuation is the backtick (`` ` ``); on bash use
+backslash (`\`). The above is otherwise identical to what the Makefile
+runs internally.
+
+> **Windows note**: when running on PowerShell/cmd, the `make up`
+> permissions-fix step (chmod) does not run. If you hit "permission
+> denied" errors on `package-lock.yml` later, switch to a WSL2 shell.
 
 ## Optional: running dbt locally with uv
 
