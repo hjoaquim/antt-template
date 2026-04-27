@@ -30,6 +30,11 @@ if INGEST_DIR not in sys.path:
     schedule="@monthly",
     start_date=datetime(2024, 1, 1),
     catchup=False,
+    # Serialise runs: the Bronze loader rebuilds `bronze.toll_traffic_raw`
+    # in place, so two concurrent runs would race and one would crash with
+    # a unique-constraint violation. ETLs that rebuild a table should not
+    # run in parallel against the same warehouse.
+    max_active_runs=1,
     tags=["capstone", "bronze", "dbt"],
 )
 def capstone_etl():
