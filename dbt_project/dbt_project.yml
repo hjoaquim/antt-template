@@ -27,11 +27,9 @@ models:
     staging:
       +materialized: view
       +schema: staging
-    # Uncomment once you add your first model under `models/silver/`.
-    # silver:
-    #   +materialized: view
-    #   +schema: silver
-    # Uncomment once you add your first model under `models/gold/`.
-    # gold:
-    #   +materialized: table
-    #   +schema: gold
+    silver:
+      +materialized: view
+      +schema: silver
+    gold:
+      +materialized: table
+      +schema: gold
