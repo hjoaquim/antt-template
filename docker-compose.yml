@@ -22,6 +22,12 @@ x-airflow-common: &airflow-common
     # Shared JWT signing key — without it, every container generates its
     # own and tasks fail with `Invalid auth token: Signature verification failed`.
     AIRFLOW__API_AUTH__JWT_SECRET: capstone-shared-jwt-secret-not-for-prod
+    # Public-facing base URL of the API server. Airflow 3 validates the
+    # post-login `next` redirect against this; if it does not match the
+    # browser hostname, login fails with `Invalid or unsafe next URL`.
+    # In Codespaces the .devcontainer overrides AIRFLOW_BASE_URL to the
+    # forwarded `*.app.github.dev` URL.
+    AIRFLOW__API__BASE_URL: ${AIRFLOW_BASE_URL:-http://localhost:8080}
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@postgres:5432/${AIRFLOW_DB}
     POSTGRES_HOST: postgres
     POSTGRES_PORT: "5432"
