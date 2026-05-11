@@ -5,6 +5,13 @@ ships a Postgres warehouse, Airflow 3, and dbt — plus a pre-built Bronze
 loader and a worked staging example — so trainees can spend their time on
 the actual exercise (Silver, Gold, tests, contract) instead of on plumbing.
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/hjoaquim/antt-template?quickstart=1)
+
+The Codespaces option is the recommended path for the workshop — the
+devcontainer pre-installs `make`, `psql`, and forwards the Airflow (8080)
+and MLflow (5000) UIs. On a fresh codespace, run `make up && make build`
+and you are ready to go.
+
 ## Prerequisites
 
 - Docker Engine 24+ with Docker Compose v2

@@ -12,10 +12,14 @@
     }
   },
 
-  "forwardPorts": [8080, 5432],
+  "forwardPorts": [8080, 5000, 5432],
   "portsAttributes": {
     "8080": {
       "label": "Airflow UI",
+      "onAutoForward": "notify"
+    },
+    "5000": {
+      "label": "MLflow UI",
       "onAutoForward": "notify"
     },
     "5432": {
@@ -26,10 +30,10 @@
 
   "postCreateCommand": "bash -c 'set -e; [ -f .env ] || cp .env.example .env; sudo apt-get update && sudo apt-get install -y --no-install-recommends make postgresql-client; pip install --user uv'",
 
-  "postStartCommand": "bash -c 'set -e; if [ -n \"$CODESPACE_NAME\" ]; then URL=\"https://${CODESPACE_NAME}-8080.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}\"; touch .env; grep -q \"^AIRFLOW_BASE_URL=\" .env && sed -i \"s#^AIRFLOW_BASE_URL=.*#AIRFLOW_BASE_URL=$URL#\" .env || echo \"AIRFLOW_BASE_URL=$URL\" >> .env; echo \"Set AIRFLOW_BASE_URL=$URL — restart the stack with: make down && make up\"; fi'",
+  "postStartCommand": "bash -c 'set -e; if [ -n \"$CODESPACE_NAME\" ]; then touch .env; for spec in AIRFLOW_BASE_URL:8080 MLFLOW_BASE_URL:5000; do KEY=${spec%:*}; PORT=${spec#*:}; URL=\"https://${CODESPACE_NAME}-${PORT}.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}\"; grep -q \"^$KEY=\" .env && sed -i \"s#^$KEY=.*#$KEY=$URL#\" .env || echo \"$KEY=$URL\" >> .env; echo \"Set $KEY=$URL\"; done; echo \"If the stack is already up, restart it with: make down && make up\"; fi'",
 
   "postAttachCommand": {
-    "hint": "echo 'Run: make up   (then open the forwarded port for the Airflow UI)'"
+    "hint": "echo 'Run: make up   (then open the forwarded ports for the Airflow and MLflow UIs)'"
   },
 
   "customizations": {

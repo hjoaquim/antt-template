@@ -130,12 +130,13 @@ services:
     image: capstone/mlflow:3.12.0
     environment:
       # MLflow 3.x adds DNS-rebinding protection that rejects Host headers
-      # outside a default allowlist. Inside this compose network the client
-      # connects to `mlflow:5000`, which is not in the default allowlist
-      # (only localhost/private-IP patterns). Allow it explicitly. The
-      # validation is exact-match, so each form (with or without port)
-      # has to be listed separately.
-      MLFLOW_SERVER_ALLOWED_HOSTS: "mlflow,mlflow:5000,mlflow:*,localhost,localhost:*,127.0.0.1,127.0.0.1:*"
+      # outside a default allowlist. Three categories of host need to be
+      # allowed: (1) `mlflow:5000` for in-cluster clients (the ml-runner
+      # container), (2) localhost for direct local browser access, and
+      # (3) `*.app.github.dev` for the Codespaces forwarded URL trainees
+      # see in their browser. The check uses fnmatch, so glob patterns
+      # like `*.app.github.dev` work.
+      MLFLOW_SERVER_ALLOWED_HOSTS: "mlflow,mlflow:5000,mlflow:*,localhost,localhost:*,127.0.0.1,127.0.0.1:*,*.app.github.dev,*.app.github.dev:*"
     ports:
       - "${MLFLOW_HOST_PORT:-5000}:5000"
     volumes:

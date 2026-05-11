@@ -62,10 +62,12 @@ shell-airflow:
 PYTHON_ML := $(COMPOSE) run --rm --entrypoint python --workdir /opt ml-runner
 PYTEST_ML := $(COMPOSE) run --rm --entrypoint pytest --workdir /opt ml-runner
 
-# Open the MLflow UI (informational — print the URL).
+# Open the MLflow UI (informational — print the URL). On Codespaces the
+# .devcontainer's postStartCommand writes MLFLOW_BASE_URL to .env with the
+# forwarded `*.app.github.dev` URL; locally it falls back to localhost.
 mlflow:
 	@. ./.env 2>/dev/null; \
-		echo "MLflow UI: http://localhost:$${MLFLOW_HOST_PORT:-5000}"
+		echo "MLflow UI: $${MLFLOW_BASE_URL:-http://localhost:$${MLFLOW_HOST_PORT:-5000}}"
 
 # Step 1 — track a single training run.
 train-once:
