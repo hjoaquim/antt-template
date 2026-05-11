@@ -58,8 +58,8 @@ shell-airflow:
 # Day 2 — ML lifecycle on the Gold layer
 # ─────────────────────────────────────────────────────────────────────────
 
-PYTHON_ML := $(COMPOSE) run --rm --entrypoint python --workdir /opt/airflow airflow-scheduler
-PYTEST_ML := $(COMPOSE) run --rm --entrypoint pytest --workdir /opt/airflow airflow-scheduler
+PYTHON_ML := $(COMPOSE) run --rm --entrypoint python --workdir /opt ml-runner
+PYTEST_ML := $(COMPOSE) run --rm --entrypoint pytest --workdir /opt ml-runner
 
 # Open the MLflow UI (informational — print the URL).
 mlflow:

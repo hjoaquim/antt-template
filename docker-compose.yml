@@ -34,16 +34,12 @@ x-airflow-common: &airflow-common
     # (uid 50000) cannot write into it. Redirect to a writable location.
     DBT_LOG_PATH: /tmp/dbt-logs
     DBT_TARGET_PATH: /tmp/dbt-target
-    # ML scripts in /opt/airflow/ml send tracking calls to the mlflow
-    # service. Defined here so every Airflow service inherits it.
-    MLFLOW_TRACKING_URI: http://mlflow:5000
   user: "${AIRFLOW_UID:-50000}:0"
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - airflow-logs:/opt/airflow/logs
     - ./dbt_project:/opt/airflow/dbt_project
     - ./ingest:/opt/airflow/ingest
-    - ./ml:/opt/airflow/ml
     - ./data:/data
   depends_on:
     postgres:
@@ -120,6 +116,7 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  # Day 2 — MLflow tracking server.
   mlflow:
     build:
       context: .
@@ -136,6 +133,38 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  # Day 2 — one-shot Python container that runs the training scripts in
+  # /opt/ml. Started via `docker compose run --rm ml-runner ...` from the
+  # Makefile (`make train-once`, `make sweep`, `make ml-test`, etc.).
+  # Uses the same image as the mlflow service to keep dependencies in one
+  # place; the Day 1 airflow image stays untouched.
+  ml-runner:
+    image: capstone/mlflow:2.18.0
+    build:
+      context: .
+      dockerfile: mlflow/Dockerfile
+    profiles: ["tools"]
+    working_dir: /opt
+    entrypoint: []
+    command: ["python", "--version"]
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Don't litter the bind-mounted ml/ folder with __pycache__ owned
+      # by root — none of it survives the one-shot container anyway.
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ./ml:/opt/ml
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
 
 volumes:
   postgres-data:
