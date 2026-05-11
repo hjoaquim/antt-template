@@ -168,3 +168,36 @@ antt-template/
 For the full capstone briefing, see the Day 1 capstone docs in the
 companion training repo (`brisa-enterprise-grade-data-training`, Session
 "Capstone Day 1").
+
+---
+
+## Day 2 — ML lifecycle on the Gold layer
+
+This branch (`day-2-starter`) extends the Day 1 stack with an `ml/`
+package and an MLflow tracking service. The Day 2 docs live in the
+training site at `docs/capstone/day-2/` — start there.
+
+### Quickstart
+
+```bash
+make up           # brings up Postgres, Airflow, dbt, MLflow
+make mlflow       # prints the MLflow UI URL (default: http://localhost:5000)
+make ml-test      # runs unit and integration tests on ml/
+```
+
+### The five steps
+
+| Step | Make target                                            | What you finish |
+|------|--------------------------------------------------------|-----------------|
+| 1    | `make train-once`                                      | The MLflow tracking block in `ml/train.py` |
+| 2    | `make register`                                        | The registry + alias block in `ml/train.py` |
+| 3    | `make sweep`                                           | The per-config training loop in `ml/sweep.py` |
+| 4    | `make promote`                                         | The comparator in `ml/promote.py` |
+| 5    | `make forecast PLAZA=... DIR=... VEH=... MONTH=...`    | The load-by-alias block in `ml/serve.py` |
+
+### The Day 2 deliverable
+
+A registered `ForecastTrafficVolume` model in MLflow with the
+`@production` alias assigned to a specific version, plus a filled-in
+`docs/model-card.md` matching `docs/model-card-template.md`. Day 3
+loads the model by URI `models:/ForecastTrafficVolume@production`.
