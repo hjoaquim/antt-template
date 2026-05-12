@@ -70,12 +70,15 @@ mlflow:
 		echo "MLflow UI: $${MLFLOW_BASE_URL:-http://localhost:$${MLFLOW_HOST_PORT:-5000}}"
 
 # Step 1 — track a single training run.
+# Pass PARAMS=<key> to pick a non-default config from PARAMS_CHOICES in
+# ml/train.py (canonical, small, deep, big). Bare `make train-once` runs
+# the `canonical` preset.
 train-once:
-	$(PYTHON_ML) -m ml.train
+	$(PYTHON_ML) -m ml.train $(if $(PARAMS),--params $(PARAMS))
 
 # Step 2 — train, register, and assign the @production alias.
 register:
-	$(PYTHON_ML) -m ml.train --register
+	$(PYTHON_ML) -m ml.train --register $(if $(PARAMS),--params $(PARAMS))
 
 # Step 3 — sweep six configurations into separate runs.
 sweep:
