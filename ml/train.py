@@ -74,45 +74,24 @@ def main():
     params = PARAMS_CHOICES[args.params]
     mlflow.set_experiment(EXPERIMENT_NAME)
 
-    # ────────────────────────────────────────────────────────────────────
-    # TODO (Step 1): wrap the training call below in an MLflow run.
-    #
-    #   1. Open a run:
-    #         with mlflow.start_run():
-    #   2. Train and score (note the third return value — an input example
-    #      MLflow uses to infer the model signature):
-    #         model, metrics, input_example = _fit_and_score(params)
-    #   3. Log the params:
-    #         mlflow.log_params(params)
-    #   4. Log the metrics:
-    #         mlflow.log_metrics(metrics)
-    #   5. Log the model and capture the ModelInfo Step 2 will register:
-    #         model_info = mlflow.sklearn.log_model(
-    #             model, name="model", input_example=input_example,
-    #         )
-    #
-    # When you are done, delete the `raise NotImplementedError` below.
-    # ────────────────────────────────────────────────────────────────────
-    raise NotImplementedError("Step 1 — see the TODO in ml/train.py")
+    with mlflow.start_run():
+        model, metrics, input_example = _fit_and_score(params)
+        mlflow.log_params(params)
+        mlflow.log_metrics(metrics)
+        model_info = mlflow.sklearn.log_model(
+            model, name="model", input_example=input_example,
+        )
 
     if args.register:
-        # ────────────────────────────────────────────────────────────────
-        # TODO (Step 2): register the model and assign the @production alias.
-        #
-        #   1. Register the model using the URI Step 1 captured:
-        #         mv = mlflow.register_model(
-        #             model_info.model_uri, REGISTERED_MODEL_NAME,
-        #         )
-        #   2. Assign the alias:
-        #         MlflowClient().set_registered_model_alias(
-        #             name=REGISTERED_MODEL_NAME,
-        #             alias=PRODUCTION_ALIAS,
-        #             version=mv.version,
-        #         )
-        #   3. Print the result:
-        #         print(f"@production currently points to version {mv.version}")
-        # ────────────────────────────────────────────────────────────────
-        raise NotImplementedError("Step 2 — see the TODO in ml/train.py")
+        mv = mlflow.register_model(
+            model_info.model_uri, REGISTERED_MODEL_NAME,
+        )
+        MlflowClient().set_registered_model_alias(
+            name=REGISTERED_MODEL_NAME,
+            alias=PRODUCTION_ALIAS,
+            version=mv.version,
+        )
+        print(f"@production currently points to version {mv.version}")
 
 
 if __name__ == "__main__":
