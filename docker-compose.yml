@@ -175,6 +175,7 @@ services:
       PYTHONDONTWRITEBYTECODE: "1"
     volumes:
       - ./ml:/opt/ml
+      - ./powerbi:/opt/powerbi
     depends_on:
       postgres:
         condition: service_healthy
