@@ -49,11 +49,8 @@ def _resolve_production_version(client: MlflowClient) -> int:
 def _load_key_lookups(engine: Engine) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Load surrogate-key lookups from Gold dimensions.
 
-    Note: plaza_key and vehicle_key are UUID hashes from the Gold schema.
-    date_key is derived as an integer YYYYMMDD from month_start (the
-    Gold dim_date.date_key is also a UUID, but YYYYMMDD integers are the
-    standard BI-tool-friendly surrogate for dates and are what the smoke
-    tests expect).
+    plaza_key, vehicle_key, and date_key are all UUID hashes from the Gold
+    schema — consistent with dim_plaza, dim_vehicle, and dim_date respectively.
     """
     plazas = pd.read_sql(
         "select plaza_key, plaza_name from gold.dim_plaza", engine,
@@ -62,11 +59,9 @@ def _load_key_lookups(engine: Engine) -> tuple[pd.DataFrame, pd.DataFrame, pd.Da
         "select vehicle_key, vehicle_type from gold.dim_vehicle", engine,
     )
     dates = pd.read_sql(
-        "select month_start from gold.dim_date", engine,
+        "select date_key, month_start from gold.dim_date", engine,
         parse_dates=["month_start"],
     )
-    # Derive integer YYYYMMDD key — standard for BI tools and expected by tests.
-    dates["date_key"] = dates["month_start"].dt.strftime("%Y%m%d").astype(int)
     return plazas, vehicles, dates
 
 

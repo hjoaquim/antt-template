@@ -34,14 +34,22 @@ def test_score_writes_csv_with_expected_columns(tmp_path):
 def test_score_holdout_window_only(tmp_path):
     """All output rows fall inside the Jul–Dec 2019 holdout window."""
     from ml import score
+    from ml.features import build_engine
 
     out = tmp_path / "fact_forecast_monthly.csv"
     score.score(output_path=out)
 
     df = pd.read_csv(out)
-    months = pd.to_datetime(df["date_key"].astype(str), format="%Y%m%d").dt.to_period("M")
-    assert months.min() == pd.Period("2019-07")
-    assert months.max() == pd.Period("2019-12")
+    engine = build_engine()
+    holdout = pd.read_sql(
+        """
+        select date_key from gold.dim_date
+        where month_start between '2019-07-01' and '2019-12-01'
+        """,
+        engine,
+    )["date_key"].tolist()
+
+    assert set(df["date_key"]) == set(holdout)
 
 
 def test_score_records_model_identity(tmp_path):
